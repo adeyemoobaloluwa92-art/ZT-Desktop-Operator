@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-black text-white">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZT-Operator | Zero-Token Desktop AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
+    
+    /* Monochrome custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: #262626; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #404040; }
+  </style>
+</head>
+<body class="h-full flex overflow-hidden antialiased bg-black text-zinc-100 select-none">
+
+  <!-- Minimalist Black & White Sidebar -->
+  <aside class="w-72 bg-zinc-950 border-r border-zinc-800 flex flex-col justify-between p-5">
+    <div class="space-y-6">
+      
+      <!-- Brand Header -->
+      <div class="flex items-center space-x-3 pb-2 border-b border-zinc-900">
+        <div class="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center font-bold font-mono text-base shadow-sm">
+          ZT
+        </div>
+        <div>
+          <h1 class="font-extrabold text-sm tracking-tight text-white">ZT-OPERATOR</h1>
+          <p class="text-[11px] text-zinc-400 font-mono tracking-wider">GEMMA 4 LOCAL AI</p>
+        </div>
+      </div>
+
+      <!-- Main Navigation -->
+      <nav class="space-y-1.5 font-mono text-xs">
+        <button id="tab-btn-console" onclick="showTab('console')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg bg-white text-black font-semibold transition text-left">
+          <i data-lucide="terminal" class="w-4 h-4"></i>
+          <span>Operator Console</span>
+        </button>
+        <button id="tab-btn-tools" onclick="showTab('tools')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition text-left">
+          <i data-lucide="wrench" class="w-4 h-4"></i>
+          <span>Tools Playground</span>
+        </button>
+        <button id="tab-btn-hitl" onclick="showTab('hitl')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition text-left">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>Security & Safety</span>
+        </button>
+        <button id="tab-btn-privacy" onclick="showTab('privacy')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition text-left">
+          <i data-lucide="info" class="w-4 h-4"></i>
+          <span>How It Works</span>
+        </button>
+      </nav>
+
+      <!-- Top Active Running Apps Widget -->
+      <div class="bg-black rounded-xl p-3.5 border border-zinc-800 space-y-2.5">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-zinc-400 font-medium">Top Workstation Apps</span>
+          <span class="text-[10px] font-mono text-zinc-500">Live RAM</span>
+        </div>
+        <div id="top-processes-list" class="space-y-1.5 font-mono text-[11px]">
+          <div class="flex justify-between text-zinc-300">
+            <span class="truncate max-w-[120px]">Loading...</span>
+            <span class="text-zinc-500">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Hardware Meters Widget (Monochrome) -->
+    <div class="bg-black rounded-xl p-3.5 border border-zinc-800 space-y-3 font-mono">
+      <div class="flex items-center justify-between text-xs">
+        <span class="text-zinc-400">Hardware Telemetry</span>
+        <span class="inline-flex items-center gap-1.5 text-zinc-200 text-[10px]">
+          <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> 100% Offline
+        </span>
+      </div>
+      
+      <div class="space-y-2.5 text-[11px]">
+        <div>
+          <div class="flex justify-between text-zinc-400 mb-1">
+            <span>CPU Load</span>
+            <span id="meter-cpu" class="text-white font-bold">0%</span>
+          </div>
+          <div class="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden">
+            <div id="bar-cpu" class="bg-white h-full w-[0%] transition-all duration-500"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-zinc-400 mb-1">
+            <span>RAM Used</span>
+            <span id="meter-ram" class="text-white font-bold">0 / 0 GB</span>
+          </div>
+          <div class="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden">
+            <div id="bar-ram" class="bg-white h-full w-[0%] transition-all duration-500"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-zinc-400 mb-1">
+            <span>Disk Usage</span>
+            <span id="meter-disk" class="text-white font-bold">0%</span>
+          </div>
+          <div class="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden">
+            <div id="bar-disk" class="bg-zinc-400 h-full w-[0%] transition-all duration-500"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Workstation View Area -->
+  <main class="flex-1 flex flex-col min-w-0 bg-black">
+    
+    <!-- Minimalist Black & White Top Bar -->
+    <header class="h-14 border-b border-zinc-800 px-6 flex items-center justify-between bg-zinc-950">
+      <div class="flex items-center space-x-3">
+        <span class="text-xs font-mono uppercase tracking-wider text-zinc-400">Operator Engine:</span>
+        <span class="px-2.5 py-1 rounded bg-zinc-900 text-zinc-200 text-xs font-mono border border-zinc-800 flex items-center gap-1.5">
+          <i data-lucide="cpu" class="w-3.5 h-3.5 text-white"></i> Gemma-4-26B-A4B-IT
+        </span>
+      </div>
+      
+      <div class="flex items-center space-x-4 text-xs font-mono">
+        <span id="backend-status-pill" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-700 text-zinc-200 text-[11px]">
+          <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Engine Online
+        </span>
+        <span class="text-zinc-400 border-l border-zinc-800 pl-4">Token Cost: <strong class="text-white">$0.00 (Zero-Token)</strong></span>
+      </div>
+    </header>
+
+    <!-- CONTENT SECTIONS -->
+    <div class="flex-1 flex overflow-hidden">
+      
+      <!-- TAB 1: OPERATOR CONSOLE -->
+      <section id="view-console" class="flex-1 flex flex-col border-r border-zinc-800">
+        
+        <!-- Chat & Workflow Stream -->
+        <div id="chat-container" class="flex-1 overflow-y-auto p-6 space-y-5">
+          
+          <!-- Welcoming Onboarding Card -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-3">
+            <div class="flex items-center space-x-3 text-white font-bold text-sm">
+              <div class="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-700 flex items-center justify-center">
+                <i data-lucide="shield" class="w-4 h-4 text-white"></i>
+              </div>
+              <span>Zero-Token Local Desktop Operator</span>
+            </div>
+            <p class="text-zinc-400 text-xs leading-relaxed max-w-2xl">
+              This assistant executes actions directly on your local workstation hardware using <strong>Google Gemma 4</strong>. 
+              Your documents, processes, calendar, and system telemetry <strong>never leave your machine</strong>. 
+              Mutating actions (such as moving files or executing shell scripts) always require your explicit manual confirmation.
+            </p>
+          </div>
+
+          <!-- 4 Prominent Quick Action Workflow Cards -->
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="runQuickCommand('Give me a full daily briefing with calendar events and hardware status')" class="p-4 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-500 hover:bg-zinc-900 transition text-left space-y-1.5 group">
+              <div class="flex items-center space-x-2 text-white font-semibold text-xs group-hover:text-zinc-200">
+                <i data-lucide="sun" class="w-4 h-4 text-white"></i>
+                <span>Daily Morning Briefing</span>
+              </div>
+              <p class="text-[11px] text-zinc-400">Summarizes calendar events, live system health, and running apps.</p>
+            </button>
+
+            <button onclick="runQuickCommand('Check my hardware health and system metrics')" class="p-4 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-500 hover:bg-zinc-900 transition text-left space-y-1.5 group">
+              <div class="flex items-center space-x-2 text-white font-semibold text-xs group-hover:text-zinc-200">
+                <i data-lucide="activity" class="w-4 h-4 text-white"></i>
+                <span>Hardware Health Audit</span>
+              </div>
+              <p class="text-[11px] text-zinc-400">Inspects live CPU %, RAM gigabytes used, disk space, and processes.</p>
+            </button>
+
+            <button onclick="runQuickCommand('What processes are consuming the most memory?')" class="p-4 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-500 hover:bg-zinc-900 transition text-left space-y-1.5 group">
+              <div class="flex items-center space-x-2 text-white font-semibold text-xs group-hover:text-zinc-200">
+                <i data-lucide="layers" class="w-4 h-4 text-white"></i>
+                <span>High Resource Apps</span>
+              </div>
+              <p class="text-[11px] text-zinc-400">Lists top 5 memory and CPU-heavy applications on your computer.</p>
+            </button>
+
+            <button onclick="runQuickCommand('Organize downloads folder')" class="p-4 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-500 hover:bg-zinc-900 transition text-left space-y-1.5 group">
+              <div class="flex items-center space-x-2 text-white font-semibold text-xs group-hover:text-zinc-200">
+                <i data-lucide="shield-alert" class="w-4 h-4 text-white"></i>
+                <span>Organize Downloads (Safety Test)</span>
+              </div>
+              <p class="text-[11px] text-zinc-400">Demonstrates Human-In-The-Loop approval before moving files.</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Chips Bar -->
+        <div class="px-4 py-2 border-t border-zinc-900 bg-zinc-950/80 flex flex-wrap gap-2 text-xs font-mono">
+          <button onclick="runQuickCommand('Read sample document')" class="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition">
+            📄 Parse Document
+          </button>
+          <button onclick="runQuickCommand('Get upcoming calendar events')" class="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition">
+            📅 Read Calendar (.ics)
+          </button>
+          <button onclick="runQuickCommand('List files in current directory')" class="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition">
+            📁 Inspect Folder
+          </button>
+          <button onclick="runQuickCommand('Run shell command to check directory')" class="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition">
+            💻 Terminal Command (HITL)
+          </button>
+        </div>
+
+        <!-- Command Input Form -->
+        <div class="p-4 border-t border-zinc-800 bg-zinc-950">
+          <form id="command-form" class="flex items-center space-x-2">
+            <input 
+              id="user-input"
+              type="text" 
+              placeholder="Ask anything or run an automation (e.g. 'Check my CPU' or 'Summarize daily calendar')..." 
+              class="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white transition font-mono"
+            />
+            <button type="submit" class="px-6 py-3.5 bg-white hover:bg-zinc-200 text-black font-bold text-sm rounded-xl transition flex items-center space-x-2">
+              <span>Execute</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- TAB 2: TOOLS PLAYGROUND (NEW FEATURE) -->
+      <section id="view-tools" class="flex-1 hidden flex-col border-r border-zinc-800 p-6 space-y-6 overflow-y-auto">
+        <div class="border-b border-zinc-800 pb-4">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="wrench" class="w-5 h-5"></i>
+            Local Tools Playground
+          </h2>
+          <p class="text-xs text-zinc-400 mt-1">
+            ZT-Operator connects to 8 native workstation tools. Test them individually with zero setup:
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Tool Card 1 -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-sm text-white font-mono">get_system_metrics</span>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-zinc-900 border border-zinc-700 text-zinc-300">Read-Only</span>
+            </div>
+            <p class="text-xs text-zinc-400">Fetches live hardware CPU load, RAM usage, and available disk capacity.</p>
+            <button onclick="runQuickCommand('Check my system metrics')" class="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-xs font-mono text-white rounded-lg border border-zinc-700 transition">
+              Run Tool &rarr;
+            </button>
+          </div>
+
+          <!-- Tool Card 2 -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-sm text-white font-mono">get_top_processes</span>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-zinc-900 border border-zinc-700 text-zinc-300">Read-Only</span>
+            </div>
+            <p class="text-xs text-zinc-400">Identifies processes consuming the most system RAM and CPU.</p>
+            <button onclick="runQuickCommand('Show top running processes')" class="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-xs font-mono text-white rounded-lg border border-zinc-700 transition">
+              Run Tool &rarr;
+            </button>
+          </div>
+
+          <!-- Tool Card 3 -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-sm text-white font-mono">get_calendar_events</span>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-zinc-900 border border-zinc-700 text-zinc-300">Read-Only</span>
+            </div>
+            <p class="text-xs text-zinc-400">Parses local .ics calendar files or current workstation date/time context.</p>
+            <button onclick="runQuickCommand('Get calendar events from sample_calendar.ics')" class="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-xs font-mono text-white rounded-lg border border-zinc-700 transition">
+              Run Tool &rarr;
+            </button>
+          </div>
+
+          <!-- Tool Card 4 -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-sm text-white font-mono">parse_local_document</span>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-zinc-900 border border-zinc-700 text-zinc-300">Read-Only</span>
+            </div>
+            <p class="text-xs text-zinc-400">Reads text and metadata directly from local PDFs, TXT, or markdown files.</p>
+            <button onclick="runQuickCommand('Read sample document')" class="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-xs font-mono text-white rounded-lg border border-zinc-700 transition">
+              Run Tool &rarr;
+            </button>
+          </div>
+
+          <!-- Tool Card 5 -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-sm text-white font-mono">list_directory</span>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-zinc-900 border border-zinc-700 text-zinc-300">Read-Only</span>
+            </div>
+            <p class="text-xs text-zinc-400">Safely audits folder contents, file sizes, and directory structures.</p>
+            <button onclick="runQuickCommand('List files in current directory')" class="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-xs font-mono text-white rounded-lg border border-zinc-700 transition">
+              Run Tool &rarr;
+            </button>
+          </div>
+
+          <!-- Tool Card 6 -->
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-sm text-white font-mono">get_daily_briefing</span>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-zinc-900 border border-zinc-700 text-zinc-300">Read-Only</span>
+            </div>
+            <p class="text-xs text-zinc-400">Aggregates schedule, system load, and running apps into an executive summary.</p>
+            <button onclick="runQuickCommand('Give me a full daily briefing')" class="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-xs font-mono text-white rounded-lg border border-zinc-700 transition">
+              Run Tool &rarr;
+            </button>
+          </div>
+
+          <!-- Tool Card 7 (HITL) -->
+          <div class="bg-zinc-950 border border-zinc-700 rounded-xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-sm text-white font-mono">organize_files</span>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-white text-black font-bold">Requires HITL</span>
+            </div>
+            <p class="text-xs text-zinc-400">Moves files from source to destination folder. Triggers security approval modal.</p>
+            <button onclick="runQuickCommand('Organize downloads folder')" class="w-full py-2 bg-white hover:bg-zinc-200 text-xs font-mono text-black font-bold rounded-lg transition">
+              Trigger Protected Action &rarr;
+            </button>
+          </div>
+
+          <!-- Tool Card 8 (HITL) -->
+          <div class="bg-zinc-950 border border-zinc-700 rounded-xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-sm text-white font-mono">execute_shell_script</span>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-white text-black font-bold">Requires HITL</span>
+            </div>
+            <p class="text-xs text-zinc-400">Executes a terminal command locally. Triggers security approval modal.</p>
+            <button onclick="runQuickCommand('Run shell command to check directory')" class="w-full py-2 bg-white hover:bg-zinc-200 text-xs font-mono text-black font-bold rounded-lg transition">
+              Trigger Protected Action &rarr;
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: HITL SECURITY & SAFETY VAULT -->
+      <section id="view-hitl" class="flex-1 hidden flex-col border-r border-zinc-800 p-6 space-y-6 overflow-y-auto">
+        <div class="border-b border-zinc-800 pb-4">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-5 h-5 text-white"></i>
+            Human-In-The-Loop (HITL) Security Architecture
+          </h2>
+          <p class="text-xs text-zinc-400 mt-1">
+            ZT-Operator enforces strict deterministic privilege separation. Read-only tools execute instantly, while state-mutating actions require manual operator authorization.
+          </p>
+        </div>
+
+        <!-- Safety Matrix Table -->
+        <div class="bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden font-mono text-xs">
+          <div class="p-3 bg-zinc-900 border-b border-zinc-800 font-bold text-white flex justify-between">
+            <span>Tool Safety Matrix</span>
+            <span>Security Level</span>
+          </div>
+          <div class="divide-y divide-zinc-900">
+            <div class="p-3 flex justify-between items-center text-zinc-300">
+              <div><strong>get_system_metrics</strong> <span class="text-zinc-500 text-[11px] block">Live CPU / RAM / Disk query</span></div>
+              <span class="text-zinc-400">Auto-Approved (Read-Only)</span>
+            </div>
+            <div class="p-3 flex justify-between items-center text-zinc-300">
+              <div><strong>parse_local_document</strong> <span class="text-zinc-500 text-[11px] block">Extracts local document text</span></div>
+              <span class="text-zinc-400">Auto-Approved (Read-Only)</span>
+            </div>
+            <div class="p-3 flex justify-between items-center text-zinc-300">
+              <div><strong>organize_files</strong> <span class="text-zinc-500 text-[11px] block">Moves / renames files on disk</span></div>
+              <span class="px-2 py-0.5 rounded bg-white text-black font-bold text-[10px]">HITL REQUIRED</span>
+            </div>
+            <div class="p-3 flex justify-between items-center text-zinc-300">
+              <div><strong>execute_shell_script</strong> <span class="text-zinc-500 text-[11px] block">Executes terminal commands</span></div>
+              <span class="px-2 py-0.5 rounded bg-white text-black font-bold text-[10px]">HITL REQUIRED</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit History List -->
+        <div class="space-y-3">
+          <h3 class="font-bold text-xs font-mono uppercase tracking-wider text-zinc-400">Authorization Decision Log</h3>
+          <div id="hitl-queue-list" class="space-y-2">
+            <div class="text-xs text-zinc-500 italic font-mono">No mutating actions have been triggered yet.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: HOW IT WORKS / PRIVACY EXPLANATION -->
+      <section id="view-privacy" class="flex-1 hidden flex-col border-r border-zinc-800 p-6 space-y-6 overflow-y-auto">
+        <div class="border-b border-zinc-800 pb-4">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="info" class="w-5 h-5 text-white"></i>
+            How Zero-Token Privacy Works
+          </h2>
+          <p class="text-xs text-zinc-400 mt-1">
+            Understanding why ZT-Operator guarantees 100% data sovereignty and $0.00 cloud token cost.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 font-mono text-xs">
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 space-y-2">
+            <div class="w-8 h-8 rounded bg-white text-black flex items-center justify-center font-bold">1</div>
+            <h4 class="font-bold text-white text-sm">Local Model Execution</h4>
+            <p class="text-zinc-400 text-[11px] leading-relaxed">
+              Google Gemma 4 weights run directly on your GPU/CPU via Ollama or LiteRT. Prompts never leave your computer.
+            </p>
+          </div>
+
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 space-y-2">
+            <div class="w-8 h-8 rounded bg-white text-black flex items-center justify-center font-bold">2</div>
+            <h4 class="font-bold text-white text-sm">Direct System Tools</h4>
+            <p class="text-zinc-400 text-[11px] leading-relaxed">
+              Standard Python libraries (`psutil`, `pypdf`, `icalendar`) read your local resources natively without third-party APIs.
+            </p>
+          </div>
+
+          <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 space-y-2">
+            <div class="w-8 h-8 rounded bg-white text-black flex items-center justify-center font-bold">3</div>
+            <h4 class="font-bold text-white text-sm">Deterministic HITL Gate</h4>
+            <p class="text-zinc-400 text-[11px] leading-relaxed">
+              The LLM can never mutate your filesystem without your real-time visual confirmation in the approval modal.
+            </p>
+          </div>
+        </div>
+
+        <!-- ASCII Architecture Card -->
+        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 font-mono text-xs space-y-2">
+          <div class="text-zinc-400 font-bold">Architecture Data Flow:</div>
+          <pre class="text-zinc-300 text-[11px] leading-snug overflow-x-auto p-2 bg-black rounded border border-zinc-900">
+User Request &rarr; Workstation UI (Localhost)
+                     &darr;
+            FastAPI Agent Server
+          &swarr;                 &searr;
+Gemma 4 (Local Ollama)     Local Tools (psutil / pypdf)
+  [Zero Cloud Calls]         [HITL Approval Gate]</pre>
+        </div>
+      </section>
+
+      <!-- Right Column: Live Tool Audit Log (Monochrome) -->
+      <section class="w-80 flex flex-col bg-zinc-950 p-4 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-mono uppercase tracking-wider text-zinc-400 font-semibold">Live Audit Log</h2>
+          <button onclick="clearAuditLog()" class="text-[10px] font-mono text-zinc-500 hover:text-white transition">Clear</button>
+        </div>
+        <div id="audit-log" class="space-y-2.5 overflow-y-auto flex-1 font-mono text-xs">
+          <div class="text-xs text-zinc-500 italic">No tools executed yet.</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- INTERACTIVE HUMAN-IN-THE-LOOP (HITL) APPROVAL MODAL (STARK BLACK & WHITE) -->
+  <div id="hitl-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 z-50">
+    <div class="bg-zinc-950 border border-zinc-600 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+      <div class="flex items-center space-x-3 text-white">
+        <div class="p-2.5 bg-white text-black rounded-xl">
+          <i data-lucide="shield-alert" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h3 class="font-extrabold text-white text-base">Security Approval Required</h3>
+          <p class="text-xs text-zinc-400 font-mono">Human-In-The-Loop Verification</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <p class="text-zinc-300">An automated operation is requesting permission to mutate files or execute commands on your computer:</p>
+        <div class="bg-black border border-zinc-800 rounded-xl p-3.5 font-mono space-y-1.5 text-zinc-300 text-[11px]">
+          <div><span class="text-zinc-500">Requested Tool:</span> <strong id="modal-tool-name" class="text-white">organize_files</strong></div>
+          <div><span class="text-zinc-500">Parameters:</span> <pre id="modal-tool-params" class="text-zinc-200 mt-1 whitespace-pre-wrap">{}</pre></div>
+        </div>
+        <p class="text-[11px] text-zinc-400 italic">This action will not proceed without your explicit approval.</p>
+      </div>
+
+      <div class="flex items-center space-x-3 pt-2">
+        <button id="btn-approve" class="flex-1 py-3 bg-white hover:bg-zinc-200 text-black font-extrabold text-xs rounded-xl transition">
+          Approve &amp; Execute
+        </button>
+        <button id="btn-deny" class="flex-1 py-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-semibold text-xs rounded-xl border border-zinc-800 transition">
+          Deny Request
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    const API_BASE = window.location.origin.startsWith('http') ? window.location.origin : "http://localhost:8000";
+    let activeActionId = null;
+
+    // Tab Navigation
+    function showTab(tabName) {
+      const tabs = ['console', 'tools', 'hitl', 'privacy'];
+      tabs.forEach(t => {
+        const view = document.getElementById(`view-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (t === tabName) {
+          view.classList.remove('hidden');
+          view.classList.add('flex');
+          btn.className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg bg-white text-black font-semibold transition text-left";
+        } else {
+          view.classList.add('hidden');
+          view.classList.remove('flex');
+          btn.className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition text-left";
+        }
+      });
+      lucide.createIcons();
+    }
+
+    // Quick Command Trigger
+    function runQuickCommand(cmd) {
+      showTab('console');
+      const input = document.getElementById('user-input');
+      input.value = cmd;
+      document.getElementById('command-form').dispatchEvent(new Event('submit'));
+    }
+
+    // Fetch hardware metrics and top processes continuously
+    async function updateHardwareMeters() {
+      try {
+        const res = await fetch(`${API_BASE}/api/health`);
+        const data = await res.json();
+        if (data.metrics) {
+          const m = data.metrics;
+          document.getElementById('meter-cpu').innerText = `${m.cpu_percent}%`;
+          document.getElementById('bar-cpu').style.width = `${m.cpu_percent}%`;
+          document.getElementById('meter-ram').innerText = `${m.ram_used_gb} / ${m.ram_total_gb} GB`;
+          document.getElementById('bar-ram').style.width = `${m.ram_percent}%`;
+          document.getElementById('meter-disk').innerText = `${m.disk_used_percent}%`;
+          document.getElementById('bar-disk').style.width = `${m.disk_used_percent}%`;
+        }
+
+        if (data.top_processes && data.top_processes.length > 0) {
+          const procsContainer = document.getElementById('top-processes-list');
+          procsContainer.innerHTML = data.top_processes.map(p => `
+            <div class="flex justify-between text-zinc-300">
+              <span class="truncate max-w-[140px] text-zinc-200">${p.name}</span>
+              <span class="text-zinc-400">${p.memory_percent}%</span>
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        console.warn("Backend offline or reconnecting.");
+      }
+    }
+    setInterval(updateHardwareMeters, 2000);
+    updateHardwareMeters();
+
+    // Command Submission
+    document.getElementById('command-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('user-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendChatMessage("user", text);
+      input.value = "";
+
+      try {
+        const res = await fetch(`${API_BASE}/api/command`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ prompt: text })
+        });
+        const data = await res.json();
+
+        if (data.type === "message") {
+          appendChatMessage("assistant", data.content);
+        } else if (data.type === "tool_executed") {
+          renderToolOutput(data.tool_name, data.result);
+          addAuditLog(data.tool_name, "Completed", "white");
+        } else if (data.type === "hitl_required") {
+          activeActionId = data.action_id;
+          showHitlModal(data.tool_name, data.parameters);
+          addAuditLog(data.tool_name, "Pending HITL Approval", "zinc");
+          recordHitlQueue(data.action_id, data.tool_name, data.parameters, "Pending");
+        }
+      } catch (err) {
+        appendChatMessage("assistant", `Error connecting to backend: ${err.message}`);
+      }
+    });
+
+    function renderToolOutput(toolName, result) {
+      let friendlyHtml = "";
+      
+      if (toolName === "get_system_metrics") {
+        friendlyHtml = `
+          <div class="space-y-2">
+            <div class="font-bold text-white text-xs">📊 Workstation Hardware Telemetry</div>
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono text-zinc-300">
+              <div class="p-2 bg-black border border-zinc-800 rounded">CPU Load: <strong class="text-white">${result.cpu_percent}%</strong></div>
+              <div class="p-2 bg-black border border-zinc-800 rounded">RAM: <strong class="text-white">${result.ram_used_gb} / ${result.ram_total_gb} GB (${result.ram_percent}%)</strong></div>
+              <div class="p-2 bg-black border border-zinc-800 rounded">Disk Free: <strong class="text-white">${result.disk_free_gb} GB</strong> (${result.disk_used_percent}% used)</div>
+              <div class="p-2 bg-black border border-zinc-800 rounded">Running Tasks: <strong class="text-white">${result.active_process_count}</strong></div>
+            </div>
+          </div>
+        `;
+      } else if (toolName === "get_daily_briefing") {
+        friendlyHtml = `
+          <div class="space-y-3">
+            <div class="font-bold text-white text-sm">🌅 Daily Workstation Briefing (${result.date})</div>
+            <div class="text-xs text-zinc-300 space-y-1">
+              <div>&bull; <strong>System Health:</strong> CPU ${result.system_status.cpu_load}, RAM ${result.system_status.ram_used}, ${result.system_status.disk_free}</div>
+              <div>&bull; <strong>Top Active Apps:</strong> ${result.top_processes.join(", ")}</div>
+              <div>&bull; <strong>Scheduled Events:</strong> ${result.scheduled_events.length > 0 ? result.scheduled_events.map(e => e.summary).join("; ") : "No calendar events found."}</div>
+            </div>
+          </div>
+        `;
+      } else if (toolName === "get_top_processes") {
+        friendlyHtml = `
+          <div class="space-y-2">
+            <div class="font-bold text-white text-xs">⚙️ Top Resource-Consuming Processes</div>
+            <div class="space-y-1 font-mono text-xs">
+              ${result.processes.map(p => `
+                <div class="flex justify-between p-1.5 bg-black border border-zinc-800 rounded">
+                  <span class="text-white">${p.name} (PID: ${p.pid})</span>
+                  <span class="text-zinc-400">RAM: ${p.memory_percent}% | CPU: ${p.cpu_percent}%</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else if (toolName === "get_calendar_events") {
+        friendlyHtml = `
+          <div class="space-y-2">
+            <div class="font-bold text-white text-xs">📅 Calendar Events (${result.current_date})</div>
+            <div class="space-y-1.5 font-mono text-xs">
+              ${result.events.length > 0 ? result.events.map(e => `
+                <div class="p-2 bg-black border border-zinc-800 rounded">
+                  <div class="font-bold text-white">${e.summary}</div>
+                  <div class="text-zinc-500 text-[10px]">${e.start ? new Date(e.start).toLocaleString() : ''}</div>
+                </div>
+              `).join('') : '<div class="text-zinc-500 italic">No calendar events scheduled.</div>'}
+            </div>
+          </div>
+        `;
+      } else {
+        friendlyHtml = `<div class="font-bold text-white text-xs">Executed ${toolName} successfully.</div>`;
+      }
+
+      // Append Friendly Message with Collapsible Raw Payload
+      const rawId = `raw-${Date.now()}`;
+      const fullHtml = `
+        <div class="space-y-3 font-mono">
+          ${friendlyHtml}
+          <details class="text-[11px] text-zinc-500 cursor-pointer pt-1 border-t border-zinc-800">
+            <summary class="hover:text-zinc-300">View Raw Tool Payload (JSON)</summary>
+            <pre class="mt-2 p-2.5 bg-black border border-zinc-800 rounded text-zinc-300 overflow-x-auto whitespace-pre-wrap">${JSON.stringify(result, null, 2)}</pre>
+          </details>
+        </div>
+      `;
+      appendChatMessage("assistant", fullHtml, true);
+    }
+
+    function showHitlModal(toolName, params) {
+      document.getElementById('modal-tool-name').innerText = toolName;
+      document.getElementById('modal-tool-params').innerText = JSON.stringify(params, null, 2);
+      document.getElementById('hitl-modal').classList.remove('hidden');
+      document.getElementById('hitl-modal').classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function hideHitlModal() {
+      document.getElementById('hitl-modal').classList.add('hidden');
+      document.getElementById('hitl-modal').classList.remove('flex');
+      activeActionId = null;
+    }
+
+    document.getElementById('btn-approve').addEventListener('click', () => handleApproval(true));
+    document.getElementById('btn-deny').addEventListener('click', () => handleApproval(false));
+
+    async function handleApproval(approved) {
+      if (!activeActionId) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/approve_action`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ action_id: activeActionId, approved: approved })
+        });
+        const data = await res.json();
+        hideHitlModal();
+        appendChatMessage("assistant", `
+          <div class="space-y-2 font-mono">
+            <div class="font-bold text-white">[HITL Protocol]: Action ${approved ? 'APPROVED &amp; EXECUTED' : 'DENIED BY OPERATOR'}</div>
+            <pre class="p-2.5 bg-black border border-zinc-800 rounded text-xs text-zinc-300 whitespace-pre-wrap">${JSON.stringify(data, null, 2)}</pre>
+          </div>
+        `, true);
+        addAuditLog("HITL Decision", approved ? "Approved" : "Denied", "white");
+        updateHitlQueue(activeActionId, approved ? "Approved" : "Denied");
+      } catch (e) {
+        alert(`Error sending approval: ${e.message}`);
+      }
+    }
+
+    function recordHitlQueue(actionId, toolName, params, status) {
+      const queue = document.getElementById('hitl-queue-list');
+      if (queue.querySelector('.italic')) {
+        queue.innerHTML = '';
+      }
+      const item = document.createElement('div');
+      item.id = `hitl-item-${actionId}`;
+      item.className = "bg-black border border-zinc-800 rounded-xl p-3.5 font-mono text-xs space-y-2";
+      item.innerHTML = `
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-white">${toolName}</span>
+          <span class="px-2 py-0.5 rounded text-[10px] bg-zinc-900 text-zinc-300 border border-zinc-700" id="hitl-status-${actionId}">${status}</span>
+        </div>
+        <div class="text-zinc-400 text-[11px] truncate">Params: ${JSON.stringify(params)}</div>
+        <div class="text-[10px] text-zinc-600">${new Date().toLocaleTimeString()}</div>
+      `;
+      queue.prepend(item);
+    }
+
+    function updateHitlQueue(actionId, status) {
+      const badge = document.getElementById(`hitl-status-${actionId}`);
+      if (badge) {
+        badge.innerText = status;
+        badge.className = status === "Approved" ? "px-2 py-0.5 rounded text-[10px] bg-white text-black font-bold" : "px-2 py-0.5 rounded text-[10px] bg-zinc-800 text-zinc-400";
+      }
+    }
+
+    function appendChatMessage(role, content, isHtml = false) {
+      const chat = document.getElementById('chat-container');
+      const msg = document.createElement('div');
+      msg.className = `flex space-x-3 ${role === 'user' ? 'justify-end' : ''}`;
+      
+      const cardClass = role === 'user' ? 'bg-zinc-900 border border-zinc-700 text-white font-mono text-sm max-w-lg p-4 rounded-2xl' : 'bg-zinc-950 border border-zinc-800 text-zinc-200 text-sm max-w-xl p-5 rounded-2xl shadow-xl w-full';
+      
+      if (isHtml) {
+        msg.innerHTML = `<div class="${cardClass}">${content}</div>`;
+      } else {
+        msg.innerHTML = `<div class="${cardClass} font-mono whitespace-pre-wrap leading-relaxed">${content}</div>`;
+      }
+      
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function addAuditLog(tool, status, color) {
+      const log = document.getElementById('audit-log');
+      if (log.querySelector('.italic')) {
+        log.innerHTML = '';
+      }
+      const entry = document.createElement('div');
+      entry.className = `bg-black border border-zinc-800 rounded-lg p-2.5 text-xs font-mono space-y-1`;
+      entry.innerHTML = `
+        <div class="flex items-center justify-between">
+          <span class="text-white font-bold">${tool}</span>
+          <span class="text-[10px] text-zinc-600">${new Date().toLocaleTimeString()}</span>
+        </div>
+        <div class="text-zinc-400 text-[11px]">${status}</div>
+      `;
+      log.prepend(entry);
+    }
+
+    function clearAuditLog() {
+      document.getElementById('audit-log').innerHTML = '<div class="text-xs text-zinc-500 italic">Audit log cleared.</div>';
+    }
+  </script>
+</body>
+</html>
